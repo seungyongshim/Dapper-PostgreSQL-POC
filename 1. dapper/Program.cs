@@ -3,6 +3,7 @@ using Dapper;
 using Npgsql;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace _1._dapper
 {
@@ -25,31 +26,24 @@ namespace _1._dapper
     {
         static void Main(string[] args)
         {
-            using var connection = new NpgsqlConnection("Host=localhost;Database=mlsdb;Username=mlsuser;Password=mlsuser;");
+            var userInfomationGateway = new UserInfomationGateway(() => new NpgsqlConnection("Host=localhost;Database=mlsdb;Username=mlsuser;Password=mlsuser;"));
 
-
-
-            connection.Execute(@"INSERT INTO USERS (PASSWORD, USER_NAME, USER_GROUP, DEPARTMENT, AUTHORITY)" + 
-                                "VALUES (:PASSWORD, :USER_NAME, :USER_GROUP, :DEPARTMENT, :AUTHORITY)",
-                new UserInformation
-                {
-                    PASSWORD = "9874",
-                    USER_NAME = "MARY",
-                    USER_GROUP = "MIRERO",
-                    DEPARTMENT = 1,
-                    AUTHORITY = 2
-                });
-
-            var persons = connection.Query<UserInformation>("SELECT * FROM USERS");
-            foreach (var person in persons)
-            {
-                Console.WriteLine(person);
-            }
-        }
-
-        public void AddWidgets(IEnumerable<UserInformation> Users)
-        {
             
+
+            userInfomationGateway.Insert(new UserInformation
+                                         {
+                                             PASSWORD = "9874",
+                                             USER_NAME = "MARY",
+                                             USER_GROUP = "MIRERO",
+                                             DEPARTMENT = 1,
+                                             AUTHORITY = 2
+                                         });
+
+            var users = userInfomationGateway.FindAll().ToList();
+
+            users.ForEach(user => Console.WriteLine(user));
+
+            userInfomationGateway.Delete(users.First());
         }
     }
 }
