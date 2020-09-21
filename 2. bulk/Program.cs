@@ -10,7 +10,7 @@ namespace _2._bulk
 {
     public class UserInformation
     {
-        public long USER_ID { get; set; }
+        public long? USER_ID { get; set; }
         public string PASSWORD { get; set; }
         public string USER_NAME { get; set; }
         public string USER_GROUP { get; set; }
@@ -27,7 +27,11 @@ namespace _2._bulk
     {
         static void Main(string[] args)
         {
-            var userInfomationGateway = new UserInfomationGateway(() => new NpgsqlConnection("Host=localhost;Database=mlsdb;Username=mlsuser;Password=mlsuser;"));
+            var userInfomationGateway = new UserInfomationGateway(() => {
+                var conn = new NpgsqlConnection("Host=localhost;Database=mlsdb;Username=mlsuser;Password=mlsuser;");
+                conn.Open();
+                return conn;
+            });
 
             while (true)
             {
@@ -42,14 +46,14 @@ namespace _2._bulk
                         DEPARTMENT = 1,
                         AUTHORITY = 2
                     },
-                    new UserInformation
-                    {
-                        PASSWORD = "9874",
-                        USER_NAME = "BULK2",
-                        USER_GROUP = "MIRERO",
-                        DEPARTMENT = 1,
-                        AUTHORITY = 2
-                    },
+                    //new UserInformation
+                    //{
+                    //    PASSWORD = "9874",
+                    //    USER_NAME = "BULK2",
+                    //    USER_GROUP = "MIRERO",
+                    //    DEPARTMENT = 1,
+                    //    AUTHORITY = 2
+                    //},
                 });
 
                 var userInfomations = userInfomationGateway.FindAll().ToList();

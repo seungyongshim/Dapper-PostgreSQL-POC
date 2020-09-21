@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using Npgsql;
-using PostgreSQLCopyHelper;
+using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -9,22 +9,31 @@ namespace _2._bulk
 {
     public class UserInfomationGateway
     {
-        static PostgreSQLCopyHelper<UserInformation> BULKMAP =
-            new PostgreSQLCopyHelper<UserInformation>("users")
-                .MapBigInt("user_id", x => x.USER_ID)
-                .MapText("password", x => x.PASSWORD)
-                .MapText("user_name", x => x.USER_NAME)
-                .MapText("user_group", x => x.USER_GROUP)
-                .MapInteger("department", x => x.DEPARTMENT)
-                .MapInteger("authority", x => x.AUTHORITY);
-
         public void BulkCopy(IEnumerable<UserInformation> users)
         {
-            using (var connection = DbConnect())
+            using (var c = DbConnect())
+            using (var writer = (c as NpgsqlConnection).BeginBinaryImport("COPY USERS (PASSWORD, USER_NAME, USER_GROUP, DEPARTMENT, AUTHORITY)" +
+                                                                          "FROM STDIN (FORMAT BINARY)"))
             {
-                connection.Open();
+                foreach (var user in users)
+                {
+                    writer.StartRow();
+                    //if (user.USER_ID != null)
+                    //{
+                    //    writer.Write(user.USER_ID.Value, NpgsqlDbType.Bigint);
+                    //}
+                    //else
+                    //{
+                    //    writer.Write(10, NpgsqlDbType.Bigint);
+                    //}
+                    writer.Write(user.PASSWORD, NpgsqlDbType.Text);
+                    writer.Write(user.USER_NAME, NpgsqlDbType.Text);
+                    writer.Write(user.USER_GROUP, NpgsqlDbType.Text);
+                    writer.Write(user.DEPARTMENT, NpgsqlDbType.Integer);
+                    writer.Write(user.AUTHORITY, NpgsqlDbType.Integer);
+                }
 
-                BULKMAP.SaveAll(connection as NpgsqlConnection, users);
+                writer.Complete();
             }
         }
 
