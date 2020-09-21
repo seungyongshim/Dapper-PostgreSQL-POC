@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace _1._dapper
+namespace _2._bulk
 {
     public class UserInformation
     {
@@ -31,20 +31,35 @@ namespace _1._dapper
 
             while (true)
             {
-                userInfomationGateway.Insert(new UserInformation
+                userInfomationGateway.BulkCopy(new UserInformation[]
                 {
-                    PASSWORD   = "9874",
-                    USER_NAME  = "MARY",
-                    USER_GROUP = "MIRERO",
-                    DEPARTMENT = 1,
-                    AUTHORITY  = 2
+                    new UserInformation
+                    {
+                        USER_ID = 3,
+                        PASSWORD = "9874",
+                        USER_NAME = "BULK1",
+                        USER_GROUP = "MIRERO",
+                        DEPARTMENT = 1,
+                        AUTHORITY = 2
+                    },
+                    new UserInformation
+                    {
+                        PASSWORD = "9874",
+                        USER_NAME = "BULK2",
+                        USER_GROUP = "MIRERO",
+                        DEPARTMENT = 1,
+                        AUTHORITY = 2
+                    },
                 });
 
                 var userInfomations = userInfomationGateway.FindAll().ToList();
 
                 userInfomations.ForEach(userInfomation => Console.WriteLine(userInfomation));
 
-                userInfomationGateway.Delete(userInfomations.First());
+                //foreach (var item in userInfomations)
+                //{
+                //    userInfomationGateway.Delete(item);
+                //}
 
                 Thread.Sleep(1000);
             }
